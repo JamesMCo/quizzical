@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome To {{ quiz_name }}!</h1>
+    <p class="lead">Please enter your team ID to join the quiz</p>
+    <hr class="my-4">
+    <input class="form-control form-control-lg my-4" id="teamid_input">
+    <button class="btn btn-primary btn-lg" onclick="join_team();">Join</button>
+</div>
+<script type="text/javascript">
+    join_team = () => {
+        let team_id = document.querySelector("#teamid_input").value;
+
+        let data = new FormData();
+        data.set("team_id", team_id);
+
+        fetch("/api/join", {method: "POST",
+            credentials: "include",
+            body: data})
+            .then((response) => {
+                if (response.status == 200) {
+                    location.reload();
+                }
+                else {
+                    alert("Team join failed")
+                }
+            }
+        );
+    }
+
+    onload = () => {
+        document.querySelector("#teamid_input").value = "";
+    }
+</script>
+{% endblock %}
