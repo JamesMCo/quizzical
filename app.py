@@ -52,6 +52,30 @@ def round_start():
         quiz["state"] = "answering"
         return f"Round started with {quiz['question_count']} question{'s' if quiz['question_count'] != 1 else ''}", 200
 
+@app.route("/api/round/stop", methods=["GET", "POST"])
+def round_stop():
+    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
+        abort(404)
+    elif request.method == "GET":
+        abort(405)
+    elif quiz["state"] != "answering":
+        return "Quiz not expecting to stop a round", 403
+    else:
+        quiz["state"] = "postround"
+        return f"Round stopped", 200
+
+@app.route("/api/round/complete", methods=["GET", "POST"])
+def round_stop():
+    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
+        abort(404)
+    elif request.method == "GET":
+        abort(405)
+    elif quiz["state"] != "postround":
+        return "Quiz not expecting to complete a round", 403
+    else:
+        quiz["state"] = "preround"
+        return f"Round complete, waiting to start a new round", 200
+
 if __name__ == "__main__":
     with open("quiz_settings.json") as f:
         settings = json.loads(f.read())
