@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session
+from flask import abort, Flask, render_template, request, session
 import json
 import uuid
 
@@ -37,6 +37,21 @@ def leave():
     else:
         return "Already not in a team", 400
 
+@app.route("/api/round/start", methods=["GET", "POST"])
+def round_start():
+    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
+        abort(404)
+    elif request.method == "GET":
+        abort(405)
+    elif quiz["state"] != "preround":
+        return "Quiz not expecting to start a round", 403
+    elif "question_count" not in request.form:
+        return "Question count not specified", 400
+    else:
+        quiz["question_count"] = request.form["question_count"]
+        quiz["state"] = "answering"
+        return f"Round started with {quiz['question_count']} question{'s' if quiz['question_count'] != 1 else ''}", 200
+
 if __name__ == "__main__":
     with open("quiz_settings.json") as f:
         settings = json.loads(f.read())
@@ -44,8 +59,9 @@ if __name__ == "__main__":
         print("All settings require values: please check quiz_settings.json")
         exit(1)
 
-    print(settings["secret_key"])
     app.secret_key = settings["secret_key"]
-    teams = {}
+
+    quiz = {"state": "preround"}
+    teams = []
 
     app.run(host="0.0.0.0", port=80)
