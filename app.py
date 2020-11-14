@@ -62,7 +62,7 @@ def round_stop():
         return "Quiz not expecting to stop a round", 403
     else:
         quiz["state"] = "postround"
-        return f"Round stopped", 200
+        return "Round stopped", 200
 
 @app.route("/api/round/complete", methods=["GET", "POST"])
 def round_complete():
@@ -74,7 +74,7 @@ def round_complete():
         return "Quiz not expecting to complete a round", 403
     else:
         quiz["state"] = "preround"
-        return f"Round complete, waiting to start a new round", 200
+        return "Round complete, waiting to start a new round", 200
 
 if __name__ == "__main__":
     with open("quiz_settings.json") as f:
