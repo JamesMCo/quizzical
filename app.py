@@ -65,7 +65,7 @@ def round_stop():
         return f"Round stopped", 200
 
 @app.route("/api/round/complete", methods=["GET", "POST"])
-def round_stop():
+def round_complete():
     if "team_id" not in session or session["team_id"] != settings["admin_id"]:
         abort(404)
     elif request.method == "GET":
