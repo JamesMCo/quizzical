@@ -148,7 +148,8 @@
                 if (response.status == 200) {
                     response.json().then((data) => {
                         document.querySelector("#teamname_input").value = "";
-                        document.querySelector("#createteam_ouptut").innerHTML = "Team Name: " + team_name +
+                        document.querySelector("#createteam_ouptut").innerHTML += ((document.querySelector("#createteam_ouptut").innerHTML == "") ? "" : "<br><br>") +
+                                                                                  "Team Name: " + team_name +
                                                                                   "<br>Leader ID: " + data["leader"] +
                                                                                   "<br>Member ID: " + data["member"];
                     })
