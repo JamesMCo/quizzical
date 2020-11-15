@@ -110,6 +110,33 @@ def status():
             return {"state": "invalid"}, 500
 
 
+@app.route("/api/create", methods=["GET", "POST"])
+def create():
+    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
+        abort(404)
+    elif request.method == "GET":
+        abort(405)
+    elif "team_name" not in request.form:
+        return "Team name not specified", 400
+    else:
+        existing_ids = [t["leader"] for t in teams] + [t["member"] for t in teams]
+
+        leader_id = str(uuid.uuid4())[:7]
+        while leader_id in existing_ids:
+            leader_id = str(uuid.uuid4())[:7]
+
+        member_id = str(uuid.uuid4())[:7]
+        while member_id in existing_ids:
+            member_id = str(uuid.uuid4())[:7]
+
+        teams.append({"name": request.form["team_name"],
+                      "leader": leader_id,
+                      "member": member_id,
+                      "submitted": False,
+                      "answers": []})
+        return {"leader": leader_id, "member": member_id}, 200
+
+
 if __name__ == "__main__":
     with open("quiz_settings.json") as f:
         settings = json.loads(f.read())

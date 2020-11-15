@@ -21,10 +21,19 @@
     </tr>
 </table>
 
-<div id="preround" class="input-group mb-3" style="display: none;">
-    <input class="form-control" id="questioncount_input" onkeyup="if (event.keyCode === 13) {start_round();}">
-    <div class="input-group=append">
-        <button class="btn btn-outline-primary" onclick="start_round();">Start Round</button>
+<div id="preround" style="display: none;">
+    <div class="input-group mb-3">
+        <input class="form-control" id="teamname_input" onkeyup="if (event.keyCode === 13) {create_team();}">
+        <div class="input-group=append">
+            <button class="btn btn-outline-primary" onclick="create_team();">Create Team</button>
+        </div>
+    </div>
+    <div id="createteam_ouptut" class="mb-3"></div>
+    <div class="input-group mb-3">
+        <input class="form-control" id="questioncount_input" onkeyup="if (event.keyCode === 13) {start_round();}">
+        <div class="input-group=append">
+            <button class="btn btn-outline-primary" onclick="start_round();">Start Round</button>
+        </div>
     </div>
 </div>
 
@@ -55,6 +64,7 @@
 
                     document.querySelector("#preround").style.display = "";
                     document.querySelector("#questioncount_input").value = "";
+                    document.querySelector("#teamname_input").value = "";
 
                     document.querySelector("#answering").style.display = "none";
 
@@ -67,6 +77,7 @@
                     document.querySelector("#tr_teamssubmitted").style.display = "";
 
                     document.querySelector("#preround").style.display = "none";
+                    document.querySelector("#createteam_ouptut").innerHTML = "";
 
                     document.querySelector("#answering").style.display = "";
 
@@ -85,6 +96,7 @@
                     document.querySelector("#tr_teamssubmitted").style.display = "none";
 
                     document.querySelector("#preround").style.display = "none";
+                    document.querySelector("#createteam_ouptut").innerHTML = "";
 
                     document.querySelector("#answering").style.display = "none";
 
@@ -105,6 +117,7 @@
                     document.querySelector("#tr_teamssubmitted").style.display = "none";
 
                     document.querySelector("#preround").style.display = "none";
+                    document.querySelector("#createteam_ouptut").innerHTML = "";
 
                     document.querySelector("#answering").style.display = "none";
 
@@ -119,6 +132,32 @@
             }
             document.querySelector("#td_teams").innerHTML = "<ul>" + team_list + "</ul>";
         });
+    }
+
+    create_team = () => {
+        let team_name = document.querySelector("#teamname_input").value;
+
+        let data = new FormData();
+        data.set("team_name", team_name);
+
+        fetch("/api/create", {method: "POST",
+            credentials: "include",
+            body: data})
+            .then((response) => {
+                get_status();
+                if (response.status == 200) {
+                    response.json().then((data) => {
+                        document.querySelector("#teamname_input").value = "";
+                        document.querySelector("#createteam_ouptut").innerHTML = "Team Name: " + team_name +
+                                                                                  "<br>Leader ID: " + data["leader"] +
+                                                                                  "<br>Member ID: " + data["member"];
+                    })
+                }
+                else {
+                    response.text().then((text) => {alert(text);});
+                }
+            }
+        );
     }
 
     start_round = () => {
