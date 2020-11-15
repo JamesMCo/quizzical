@@ -76,6 +76,40 @@ def round_complete():
         quiz["state"] = "preround"
         return "Round complete, waiting to start a new round", 200
 
+
+@app.route("/api/status")
+def status():
+    if "team_id" not in session:
+        abort(404)
+    elif session["team_id"] == settings["admin_id"]:
+        if quiz["state"] == "preround":
+            return {"state": quiz["state"],
+                    "teams": [t["name"] for t in teams]}, 200
+        elif quiz["state"] == "answering":
+            return {"state": quiz["state"],
+                    "question_count": quiz["question_count"],
+                    "teams": [t["name"] for t in teams],
+                    "submitted": [t["name"] for t in teams if t["submitted"]]}, 200
+        elif quiz["state"] == "postround":
+            return {"state": quiz["state"],
+                "question_count": quiz["question_count"],
+                "teams": [t["name"] for t in teams],
+                "submissions": [{"name": t["name"], "answers": t["answers"]} for t in teams if t["submitted"]]}, 200
+        else:
+            return {"state": "invalid",
+                    "teams": [t["name"] for t in teams]}, 500
+    else:
+        if quiz["state"] == "preround":
+            return {"state": "preround"}, 200
+        elif quiz["state"] == "answering":
+            return {"state": "answering",
+                    "question_count": quiz["question_count"]}, 200
+        elif quiz["state"] == "postround":
+            return {"state": "postround"}, 200
+        else:
+            return {"state": "invalid"}, 500
+
+
 if __name__ == "__main__":
     with open("quiz_settings.json") as f:
         settings = json.loads(f.read())
@@ -85,7 +119,7 @@ if __name__ == "__main__":
 
     app.secret_key = settings["secret_key"]
 
-    quiz = {"state": "preround"}
+    quiz = {"state": "preround", "question_count": 0}
     teams = []
 
     app.run(host="0.0.0.0", port=80)

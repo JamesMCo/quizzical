@@ -1,4 +1,171 @@
 {% extends "logged_in.html" %}
 {% block content %}
-<h1>Admin Page</h1>
+<h1>{{ quiz_name }} - Admin Page</h1>
+
+<table class="table">
+    <tr>
+        <th scope="row">Quiz State</th>
+        <td id="td_quizstate"></td>
+    </tr>
+    <tr id="tr_questioncount" style="display: none;">
+        <th scope="row">Questions in Round</th>
+        <td id="td_questioncount"></td>
+    </tr>
+    <tr>
+        <th scope="row">Teams</th>
+        <td id="td_teams"></td>
+    </tr>
+    <tr id="tr_teamssubmitted" style="display: none;">
+        <th scope="row">Submitted</th>
+        <td id="td_teamssubmitted"></td>
+    </tr>
+</table>
+
+<div id="preround" class="input-group mb-3" style="display: none;">
+    <input class="form-control" id="questioncount_input" onkeyup="if (event.keyCode === 13) {start_round();}">
+    <div class="input-group=append">
+        <button class="btn btn-outline-primary" onclick="start_round();">Start Round</button>
+    </div>
+</div>
+
+<button id="answering" class="btn btn-primary btn-lg" style="display: none;" onclick="stop_round();">Stop Round</button>
+
+<div id="postround" style="display: none;">
+    <button class="btn btn-primary btn-lg" onclick="complete_round();">Complete Round</button>
+    <div id="answer_list"></div>
+</div>
+
+<script type="text/javascript">
+    get_status = () => {
+        fetch("/api/status")
+        .then((response) => {
+            if (response.status === 200) {
+                return response.json();
+            }
+            else {
+                console.log("Status update failed");
+                console.log(response);
+            }
+        }).then((data) => {
+            switch (data["state"]) {
+                case "preround":
+                    document.querySelector("#td_quizstate").innerHTML = "Pre-Round";
+                    document.querySelector("#tr_questioncount").style.display = "none";
+                    document.querySelector("#tr_teamssubmitted").style.display = "none";
+
+                    document.querySelector("#preround").style.display = "";
+                    document.querySelector("#questioncount_input").value = "";
+
+                    document.querySelector("#answering").style.display = "none";
+
+                    document.querySelector("#postround").style.display = "none";
+                    break;
+                case "answering":
+                    document.querySelector("#td_quizstate").innerHTML = "Answering";
+                    document.querySelector("#tr_questioncount").style.display = "";
+                    document.querySelector("#td_questioncount").innerHTML = data["question_count"];
+                    document.querySelector("#tr_teamssubmitted").style.display = "";
+
+                    document.querySelector("#preround").style.display = "none";
+
+                    document.querySelector("#answering").style.display = "";
+
+                    document.querySelector("#postround").style.display = "none";
+                    
+                    let submitted_list = "";
+                    for (team of data["submitted"]) {
+                        submitted_list += "<td>" + team + "</td>";
+                    }
+                    document.querySelector("#td_teamssubmitted").innerHTML = submitted_list;
+                    break;
+                case "postround":
+                    document.querySelector("#td_quizstate").innerHTML = "Post-Round";
+                    document.querySelector("#tr_questioncount").style.display = "";
+                    document.querySelector("#td_questioncount").innerHTML = data["question_count"];
+                    document.querySelector("#tr_teamssubmitted").style.display = "none";
+
+                    document.querySelector("#preround").style.display = "none";
+
+                    document.querySelector("#answering").style.display = "none";
+
+                    document.querySelector("#postround").style.display = "";
+                    let answer_list = "";
+                    for (submission of data["submissions"]) {
+                        answer_list += "<h3>" + submission["name"] + "<h3><ul>";
+                        for (answer of submission["answers"]) {
+                            answer_list += "<li>" + answer + "</li>";
+                        }
+                        answer_list += "</ul>";
+                    }
+                    document.querySelector("#answer_list").innerHTML = answer_list;
+                    break;
+                default:
+                    document.querySelector("#td_quizstate").innerHTML = "Invalid State (" + data["state"] +")";
+                    document.querySelector("#tr_questioncount").style.display = "none";
+                    document.querySelector("#tr_teamssubmitted").style.display = "none";
+
+                    document.querySelector("#preround").style.display = "none";
+
+                    document.querySelector("#answering").style.display = "none";
+
+                    document.querySelector("#postround").style.display = "none";
+                    break;
+            }
+
+
+            let team_list = "";
+            for (team of data["teams"]) {
+                team_list += "<li>" + team + "</li>";
+            }
+            document.querySelector("#td_teams").innerHTML = "<ul>" + team_list + "</ul>";
+        });
+    }
+
+    start_round = () => {
+        let question_count = document.querySelector("#questioncount_input").value;
+
+        let data = new FormData();
+        data.set("question_count", question_count);
+
+        fetch("/api/round/start", {method: "POST",
+            credentials: "include",
+            body: data})
+            .then((response) => {
+                get_status();
+                if (response.status != 200) {
+                    response.text().then((text) => {alert(text);});
+                }
+            }
+        );
+    }
+
+    stop_round = () => {
+        fetch("/api/round/stop", {method: "POST",
+            credentials: "include"})
+            .then((response) => {
+                get_status();
+                if (response.status != 200) {
+                    response.text().then((text) => {alert(text);});
+                }
+            }
+        );
+    }
+
+    complete_round = () => {
+        fetch("/api/round/complete", {method: "POST",
+            credentials: "include"})
+            .then((response) => {
+                get_status();
+                if (response.status != 200) {
+                    response.text().then((text) => {alert(text);});
+                }
+            }
+        );
+    }
+
+    onload = () => {
+        get_status();
+        setInterval(get_status, 5000);
+    }
+</script>
 {% endblock %}
