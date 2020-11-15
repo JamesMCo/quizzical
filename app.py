@@ -121,13 +121,13 @@ def create():
     else:
         existing_ids = [t["leader"] for t in teams] + [t["member"] for t in teams]
 
-        leader_id = str(uuid.uuid4())[:7]
+        leader_id = str(uuid.uuid4())[:8]
         while leader_id in existing_ids:
-            leader_id = str(uuid.uuid4())[:7]
+            leader_id = str(uuid.uuid4())[:8]
 
-        member_id = str(uuid.uuid4())[:7]
+        member_id = str(uuid.uuid4())[:8]
         while member_id in existing_ids:
-            member_id = str(uuid.uuid4())[:7]
+            member_id = str(uuid.uuid4())[:8]
 
         teams.append({"name": request.form["team_name"],
                       "leader": leader_id,
