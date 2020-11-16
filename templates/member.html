@@ -1,0 +1,90 @@
+{% extends "logged_in.html" %}
+{% block content %}
+<h1>{{ quiz_name }} - {{ team_data["name"] }}</h1>
+
+<h3 id="preround" style="display: none;">Please wait for the next round to start</h3>
+
+<div id="answering" style="display: none;">
+    <div id="notsubmitted" style="display: none;">
+        <h3 id="answeringheader">The round has started</h3>
+        <h5>There are <span id="questioncount">0 questions</span>, and only your team leader may submit answers</h5>
+    </div>
+    <div id="submitted" style="display: none;">
+        <h3>Your team has submitted answers</h3>
+        <div id="answering_answer_list"></div>
+    </div>
+</div>
+
+<div id="postround" style="display: none;">
+    <h3>The round is over</h3>
+    <div id="postround_answer_list"></div>
+</div>
+
+<script type="text/javascript">
+    get_status = () => {
+        fetch("/api/status")
+        .then((response) => {
+            if (response.status === 200) {
+                return response.json();
+            }
+            else {
+                console.log("Status update failed");
+                console.log(response);
+            }
+        }).then((data) => {
+            switch (data["state"]) {
+                case "preround":
+                    document.querySelector("#preround").style.display = "";
+                    document.querySelector("#answering").style.display = "none";
+                    document.querySelector("#postround").style.display = "none";
+                    break;
+                case "answering":
+                    document.querySelector("#preround").style.display = "none";
+                    document.querySelector("#answering").style.display = "";
+                    document.querySelector("#postround").style.display = "none";
+
+                    if (!data["submitted"]) {
+                        document.querySelector("#notsubmitted").style.display = "";
+                        document.querySelector("#submitted").style.display = "none";
+                        document.querySelector("#questioncount").innerHTML = data["question_count"] + " question" + (data["question_count"] === "1" ? "" : "s");
+                    } else {
+                        document.querySelector("#notsubmitted").style.display = "none";
+                        document.querySelector("#submitted").style.display = "";
+
+                        let answer_list = "";
+                        answer_list += "<ol>";
+                        for (answer of data["answers"]) {
+                            answer_list += "<li>" + answer + "</li>";
+                        }
+                        answer_list += "</ol>";
+                        document.querySelector("#answering_answer_list").innerHTML = answer_list;
+                    }
+                    break;
+                case "postround":
+                    document.querySelector("#preround").style.display = "none";
+                    document.querySelector("#answering").style.display = "none";
+                    document.querySelector("#postround").style.display = "";
+
+                    let answer_list = "";
+                    answer_list += "<ol>";
+                    for (answer of data["answers"]) {
+                        answer_list += "<li>" + answer + "</li>";
+                    }
+                    answer_list += "</ol>";
+                    document.querySelector("#postround_answer_list").innerHTML = answer_list;
+                    break;
+                default:
+                    document.querySelector("#preround").style.display = "none";
+                    document.querySelector("#answering").style.display = "none";
+                    document.querySelector("#postround").style.display = "none";
+                    break;
+            }
+        });
+    }
+
+    onload = () => {
+        get_status();
+        setInterval(get_status, 5000);
+    }
+</script>
+{% endblock %}

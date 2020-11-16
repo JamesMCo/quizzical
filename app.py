@@ -17,7 +17,7 @@ def main():
         elif session["team_id"] in [t["member"] for t in teams]:
             # Team member, so show submitted page
             team_data = [t for t in teams if t["member"] == session["team_id"]][0]
-            return render_template("index.html", **settings, team_data=team_data)
+            return render_template("member.html", **settings, team_data=team_data)
     # Not yet part of a team or an admin, so show basic index page
     return render_template("index.html", **settings)
 
@@ -109,10 +109,21 @@ def status():
         if quiz["state"] == "preround":
             return {"state": "preround"}, 200
         elif quiz["state"] == "answering":
-            return {"state": "answering",
-                    "question_count": quiz["question_count"]}, 200
+            team_data = [t for t in teams if t["leader"] == session["team_id"] or t["member"] == session["team_id"]][0]
+            if team_data["submitted"]:
+                return {"state": "answering",
+                        "question_count": quiz["question_count"],
+                        "submitted": team_data["submitted"],
+                        "answers": team_data["answers"]}, 200
+            else:
+                return {"state": "answering",
+                        "question_count": quiz["question_count"],
+                        "submitted": team_data["submitted"]}, 200
         elif quiz["state"] == "postround":
-            return {"state": "postround"}, 200
+            team_data = [t for t in teams if t["leader"] == session["team_id"] or t["member"] == session["team_id"]][0]
+            return {"state": "postround",
+                    "question_count": quiz["question_count"],
+                    "answers": team_data["answers"]}, 200
         else:
             return {"state": "invalid"}, 500
 
