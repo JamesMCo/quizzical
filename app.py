@@ -1,4 +1,4 @@
-from flask import abort, Flask, render_template, request, session
+from flask import abort, escape, Flask, render_template, request, session
 import json
 import uuid
 
@@ -153,7 +153,7 @@ def create():
         while member_id in existing_ids:
             member_id = str(uuid.uuid4())[:8]
 
-        teams.append({"name": request.form["team_name"],
+        teams.append({"name": escape(request.form["team_name"]),
                       "leader": leader_id,
                       "member": member_id,
                       "submitted": False,
