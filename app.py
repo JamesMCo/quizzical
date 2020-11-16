@@ -47,12 +47,17 @@ def round_start():
         abort(405)
     elif quiz["state"] != "preround":
         return "Quiz not expecting to start a round", 403
-    elif "question_count" not in request.form:
-        return "Question count not specified", 400
+    elif "question_count" not in request.form or request.form["question_count"] == "":
+        return "Question count not specified", 400 
     else:
-        quiz["question_count"] = request.form["question_count"]
+        try:
+            question_count = int(request.form["question_count"])
+        except:
+            return "Question count not integer", 400
+
+        quiz["question_count"] = question_count
         quiz["state"] = "answering"
-        return f"Round started with {quiz['question_count']} question{'s' if quiz['question_count'] != 1 else ''}", 200
+        return f"Round started with {question_count} question{'s' if question_count != 1 else ''}", 200
 
 @app.route("/api/round/stop", methods=["GET", "POST"])
 def round_stop():
