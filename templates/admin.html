@@ -102,11 +102,11 @@
                     document.querySelector("#postround").style.display = "";
                     let answer_list = "";
                     for (submission of data["submissions"]) {
-                        answer_list += "<h3>" + submission["name"] + "<h3><ul>";
+                        answer_list += "<h3>" + submission["name"] + "<h3><ol>";
                         for (answer of submission["answers"]) {
                             answer_list += "<li>" + answer + "</li>";
                         }
-                        answer_list += "</ul>";
+                        answer_list += "</ol>";
                     }
                     document.querySelector("#answer_list").innerHTML = answer_list;
                     break;
