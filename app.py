@@ -57,6 +57,9 @@ def round_start():
 
         quiz["question_count"] = question_count
         quiz["state"] = "answering"
+        for i in len(teams):
+            teams[i]["submitted"] = False
+            teams[i]["answers"] = [""] * question_count
         return f"Round started with {question_count} question{'s' if question_count != 1 else ''}", 200
 
 @app.route("/api/round/stop", methods=["GET", "POST"])
