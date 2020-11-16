@@ -7,7 +7,7 @@
 <div id="answering" style="display: none;">
     <div id="notsubmitted" style="display: none;">
         <h3 id="answeringheader">The round has started</h3>
-        <h5>There are <span id="questioncount">0 questions</span>, and only your team leader may submit answers</h5>
+        <h5>There <span id="questioncount">are 0 questions</span>, and only your team leader may submit answers</h5>
     </div>
     <div id="submitted" style="display: none;">
         <h3>Your team has submitted answers</h3>
@@ -46,7 +46,9 @@
                     if (!data["submitted"]) {
                         document.querySelector("#notsubmitted").style.display = "";
                         document.querySelector("#submitted").style.display = "none";
-                        document.querySelector("#questioncount").innerHTML = data["question_count"] + " question" + (data["question_count"] === "1" ? "" : "s");
+                        document.querySelector("#questioncount").innerHTML = (data["question_count"] === 1 ? "is " : "are ") +
+                                                                             data["question_count"] +
+                                                                             " question" + (data["question_count"] === 1 ? "" : "s");
                     } else {
                         document.querySelector("#notsubmitted").style.display = "none";
                         document.querySelector("#submitted").style.display = "";
