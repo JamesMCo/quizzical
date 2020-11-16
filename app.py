@@ -118,7 +118,7 @@ def create():
         abort(404)
     elif request.method == "GET":
         abort(405)
-    elif "team_name" not in request.form:
+    elif "team_name" not in request.form or request.form["team_name"] == "":
         return "Team name not specified", 400
     else:
         existing_ids = [t["leader"] for t in teams] + [t["member"] for t in teams]

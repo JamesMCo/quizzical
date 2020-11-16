@@ -137,6 +137,9 @@
 
     create_team = () => {
         let team_name = document.querySelector("#teamname_input").value;
+        if (team_name === "") {
+            return;
+        }
 
         let data = new FormData();
         data.set("team_name", team_name);
