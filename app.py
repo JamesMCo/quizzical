@@ -13,7 +13,7 @@ def main():
         elif session["team_id"] in [t["leader"] for t in teams]:
             # Team leader, so show entry page
             team_data = [t for t in teams if t["leader"] == session["team_id"]][0]
-            return render_template("index.html", **settings, team_data=team_data)
+            return render_template("leader.html", **settings, team_data=team_data)
         elif session["team_id"] in [t["member"] for t in teams]:
             # Team member, so show submitted page
             team_data = [t for t in teams if t["member"] == session["team_id"]][0]
@@ -159,6 +159,21 @@ def create():
                       "submitted": False,
                       "answers": []})
         return {"leader": leader_id, "member": member_id}, 200
+
+
+@app.route("/api/submit", methods=["POST"])
+def submit():
+    if "team_id" not in session:
+        abort(404)
+    elif session["team_id"] == settings["admin_id"] or session["team_id"] not in [t["leader"] for t in teams]:
+        abort(404)
+    elif "answers" not in request.form:
+        return "Answers not specified", 400
+
+    t = [i for i, t in enumerate(teams) if t["leader"] == session["team_id"]][0]
+    teams[t]["submitted"] = True
+    teams[t]["answers"] = [escape(a) for a in json.loads(request.form["answers"])]
+    return "Answers submitted successfully", 200
 
 
 if __name__ == "__main__":
