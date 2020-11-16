@@ -148,7 +148,6 @@
             credentials: "include",
             body: data})
             .then((response) => {
-                get_status();
                 if (response.status == 200) {
                     response.json().then((data) => {
                         document.querySelector("#teamname_input").value = "";
