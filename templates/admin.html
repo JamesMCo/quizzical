@@ -64,8 +64,6 @@
                     document.querySelector("#tr_teamssubmitted").style.display = "none";
 
                     document.querySelector("#preround").style.display = "";
-                    document.querySelector("#questioncount_input").value = "";
-                    document.querySelector("#teamname_input").value = "";
 
                     document.querySelector("#answering").style.display = "none";
 
@@ -78,6 +76,8 @@
                     document.querySelector("#tr_teamssubmitted").style.display = "";
 
                     document.querySelector("#preround").style.display = "none";
+                    document.querySelector("#questioncount_input").value = "";
+                    document.querySelector("#teamname_input").value = "";
 
                     document.querySelector("#answering").style.display = "";
 
@@ -205,6 +205,9 @@
     }
 
     onload = () => {
+        document.querySelector("#questioncount_input").value = "";
+        document.querySelector("#teamname_input").value = "";
+
         get_status();
         setInterval(get_status, 5000);
     }
