@@ -12,10 +12,12 @@ def main():
             return render_template("admin.html", **settings)
         elif session["team_id"] in [t["leader"] for t in teams]:
             # Team leader, so show entry page
-            return render_template("index.html", **settings)
+            team_data = [t for t in teams if t["leader"] == session["team_id"]][0]
+            return render_template("index.html", **settings, team_data=team_data)
         elif session["team_id"] in [t["member"] for t in teams]:
             # Team member, so show submitted page
-            return render_template("index.html", **settings)
+            team_data = [t for t in teams if t["member"] == session["team_id"]][0]
+            return render_template("index.html", **settings, team_data=team_data)
     # Not yet part of a team or an admin, so show basic index page
     return render_template("index.html", **settings)
 
@@ -84,20 +86,20 @@ def status():
     elif session["team_id"] == settings["admin_id"]:
         if quiz["state"] == "preround":
             return {"state": quiz["state"],
-                    "teams": [t["name"] for t in teams]}, 200
+                    "teams": [{"name": t["name"], "leader": t["leader"], "member": t["member"]} for t in teams]}, 200
         elif quiz["state"] == "answering":
             return {"state": quiz["state"],
                     "question_count": quiz["question_count"],
-                    "teams": [t["name"] for t in teams],
+                    "teams": [{"name": t["name"], "leader": t["leader"], "member": t["member"]} for t in teams],
                     "submitted": [t["name"] for t in teams if t["submitted"]]}, 200
         elif quiz["state"] == "postround":
             return {"state": quiz["state"],
                 "question_count": quiz["question_count"],
-                "teams": [t["name"] for t in teams],
+                "teams": [{"name": t["name"], "leader": t["leader"], "member": t["member"]} for t in teams],
                 "submissions": [{"name": t["name"], "answers": t["answers"]} for t in teams if t["submitted"]]}, 200
         else:
             return {"state": "invalid",
-                    "teams": [t["name"] for t in teams]}, 500
+                    "teams": [{"name": t["name"], "leader": t["leader"], "member": t["member"]} for t in teams]}, 500
     else:
         if quiz["state"] == "preround":
             return {"state": "preround"}, 200

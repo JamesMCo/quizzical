@@ -28,7 +28,6 @@
             <button class="btn btn-outline-primary" onclick="create_team();">Create Team</button>
         </div>
     </div>
-    <div id="createteam_ouptut" class="mb-3"></div>
     <div class="input-group mb-3">
         <input class="form-control" id="questioncount_input" onkeyup="if (event.keyCode === 13) {start_round();}">
         <div class="input-group=append">
@@ -45,6 +44,8 @@
 </div>
 
 <script type="text/javascript">
+    let prev_team_list = [];
+
     get_status = () => {
         fetch("/api/status")
         .then((response) => {
@@ -77,7 +78,6 @@
                     document.querySelector("#tr_teamssubmitted").style.display = "";
 
                     document.querySelector("#preround").style.display = "none";
-                    document.querySelector("#createteam_ouptut").innerHTML = "";
 
                     document.querySelector("#answering").style.display = "";
 
@@ -96,7 +96,6 @@
                     document.querySelector("#tr_teamssubmitted").style.display = "none";
 
                     document.querySelector("#preround").style.display = "none";
-                    document.querySelector("#createteam_ouptut").innerHTML = "";
 
                     document.querySelector("#answering").style.display = "none";
 
@@ -117,7 +116,6 @@
                     document.querySelector("#tr_teamssubmitted").style.display = "none";
 
                     document.querySelector("#preround").style.display = "none";
-                    document.querySelector("#createteam_ouptut").innerHTML = "";
 
                     document.querySelector("#answering").style.display = "none";
 
@@ -126,11 +124,14 @@
             }
 
 
-            let team_list = "";
-            for (team of data["teams"]) {
-                team_list += "<li>" + team + "</li>";
+            if (JSON.stringify(prev_team_list) !== JSON.stringify(data["teams"])) {
+                prev_team_list = data["teams"].slice();
+                let team_list = "";
+                for (team of data["teams"]) {
+                    team_list += "<details><summary>" + team["name"] + "</summary><ul><li>Leader ID: " + team["leader"] + "</li><li>Member ID: " + team["member"] +  "</li></ul></details>";
+                }
+                document.querySelector("#td_teams").innerHTML = team_list;
             }
-            document.querySelector("#td_teams").innerHTML = "<ul>" + team_list + "</ul>";
         });
     }
 
@@ -148,10 +149,7 @@
                 if (response.status == 200) {
                     response.json().then((data) => {
                         document.querySelector("#teamname_input").value = "";
-                        document.querySelector("#createteam_ouptut").innerHTML += ((document.querySelector("#createteam_ouptut").innerHTML == "") ? "" : "<br><br>") +
-                                                                                  "Team Name: " + team_name +
-                                                                                  "<br>Leader ID: " + data["leader"] +
-                                                                                  "<br>Member ID: " + data["member"];
+                        get_status();
                     })
                 }
                 else {
