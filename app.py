@@ -109,6 +109,9 @@ def status():
             return {"state": "invalid",
                     "teams": [{"name": t["name"], "leader": t["leader"], "member": t["member"]} for t in teams]}, 500
     else:
+        if session["team_id"] not in [t["leader"] for t in teams] or session["team_id"] not in [t["member"] for t in teams]:
+            abort(404)
+
         if quiz["state"] == "preround":
             return {"state": "preround"}, 200
         elif quiz["state"] == "answering":
