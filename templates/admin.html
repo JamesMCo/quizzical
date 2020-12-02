@@ -86,8 +86,9 @@
                     
                     let submitted_list = "";
                     for (team of data["submitted"]) {
-                        submitted_list += "<td>" + team + "</td>";
+                        submitted_list += team + "<br>";
                     }
+                    submitted_list += "";
                     document.querySelector("#td_teamssubmitted").innerHTML = submitted_list;
                     break;
                 case "postround":
