@@ -133,6 +133,19 @@ def status():
         else:
             return {"state": "invalid"}, 500
 
+@app.route("/api/answers.txt")
+def answers():
+    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
+        abort(404)
+    elif quiz["state"] != "postround":
+        return "Quiz not expecting to return an answers file", 403
+    else:
+        return "\n\n".join(
+            t['name'] + "\n" +
+            "\n".join(f"{i+1}) {a}" for i, a in enumerate(t['answers']))
+            for t in teams if t["submitted"]
+        ), 200
+
 
 @app.route("/api/create", methods=["GET", "POST"])
 def create():
