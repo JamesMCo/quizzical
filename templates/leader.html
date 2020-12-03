@@ -131,7 +131,7 @@
 
     onload = () => {
         get_status();
-        setInterval(get_status, 5000);
+        setInterval(get_status, {{ heartbeat_freq }});
     }
 </script>
 {% endblock %}

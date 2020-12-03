@@ -1,5 +1,6 @@
 {
-    "quiz_name":  "",
-    "admin_id":   "",
-    "secret_key": ""
+    "quiz_name":      "",
+    "admin_id":       "",
+    "secret_key":     "",
+    "heartbeat_freq": 5000
 }
