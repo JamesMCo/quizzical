@@ -1,8 +1,72 @@
 from flask import abort, escape, Flask, render_template, request, session
+from functools import wraps
 import json
 import uuid
 
 app = Flask(__name__, static_folder="static")
+
+
+# Decorators
+
+def requires_admin(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "team_id" not in session or session["team_id"] != settings["admin_id"]:
+            abort(404)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def requires_team_leader(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "team_id" not in session:
+            abort(404)
+        elif session["team_id"] not in [t["leader"] for t in teams]:
+            abort(404)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def requires_team_member(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "team_id" not in session:
+            abort(404)
+        elif session["team_id"] not in [t["member"] for t in teams]:
+            abort(404)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def requires_team_leader_or_member(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "team_id" not in session:
+            abort(404)
+        elif session["team_id"] not in [t["leader"] for t in teams]:
+            abort(404)
+        elif session["team_id"] not in [t["member"] for t in teams]:
+            abort(404)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def requires_login(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "team_id" not in session:
+            abort(404)
+        elif session["team_id"] != settings["admin_id"] and session["team_id"] not in [t["leader"] for t in teams] and session["team_id"] not in [t["member"] for t in teams]:
+            abort(404)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def requires_post(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if request.method == "GET":
+            abort(405)
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Routes
 
 @app.route("/")
 def main():
@@ -40,12 +104,10 @@ def leave():
         return "Already not in a team", 400
 
 @app.route("/api/round/start", methods=["GET", "POST"])
+@requires_admin
+@requires_post
 def round_start():
-    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
-        abort(404)
-    elif request.method == "GET":
-        abort(405)
-    elif quiz["state"] != "preround":
+    if quiz["state"] != "preround":
         return "Quiz not expecting to start a round", 403
     elif "question_count" not in request.form or request.form["question_count"] == "":
         return "Question count not specified", 400 
@@ -63,24 +125,20 @@ def round_start():
         return f"Round started with {question_count} question{'s' if question_count != 1 else ''}", 200
 
 @app.route("/api/round/stop", methods=["GET", "POST"])
+@requires_admin
+@requires_post
 def round_stop():
-    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
-        abort(404)
-    elif request.method == "GET":
-        abort(405)
-    elif quiz["state"] != "answering":
+    if quiz["state"] != "answering":
         return "Quiz not expecting to stop a round", 403
     else:
         quiz["state"] = "postround"
         return "Round stopped", 200
 
 @app.route("/api/round/complete", methods=["GET", "POST"])
+@requires_admin
+@requires_post
 def round_complete():
-    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
-        abort(404)
-    elif request.method == "GET":
-        abort(405)
-    elif quiz["state"] != "postround":
+    if quiz["state"] != "postround":
         return "Quiz not expecting to complete a round", 403
     else:
         quiz["state"] = "preround"
@@ -88,10 +146,9 @@ def round_complete():
 
 
 @app.route("/api/status")
+@requires_login
 def status():
-    if "team_id" not in session:
-        abort(404)
-    elif session["team_id"] == settings["admin_id"]:
+    if session["team_id"] == settings["admin_id"]:
         if quiz["state"] == "preround":
             return {"state": quiz["state"],
                     "teams": [{"name": t["name"], "leader": t["leader"], "member": t["member"]} for t in teams]}, 200
@@ -109,9 +166,6 @@ def status():
             return {"state": "invalid",
                     "teams": [{"name": t["name"], "leader": t["leader"], "member": t["member"]} for t in teams]}, 500
     else:
-        if session["team_id"] not in [t["leader"] for t in teams] and session["team_id"] not in [t["member"] for t in teams]:
-            abort(404)
-
         if quiz["state"] == "preround":
             return {"state": "preround"}, 200
         elif quiz["state"] == "answering":
@@ -134,10 +188,9 @@ def status():
             return {"state": "invalid"}, 500
 
 @app.route("/api/answers.txt")
+@requires_admin
 def answers():
-    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
-        abort(404)
-    elif quiz["state"] != "postround":
+    if quiz["state"] != "postround":
         return "Quiz not expecting to return an answers file", 403
     else:
         return "\n\n".join(
@@ -148,12 +201,10 @@ def answers():
 
 
 @app.route("/api/create", methods=["GET", "POST"])
+@requires_admin
+@requires_post
 def create():
-    if "team_id" not in session or session["team_id"] != settings["admin_id"]:
-        abort(404)
-    elif request.method == "GET":
-        abort(405)
-    elif "team_name" not in request.form or request.form["team_name"] == "":
+    if "team_name" not in request.form or request.form["team_name"] == "":
         return "Team name not specified", 400
     else:
         existing_ids = [t["leader"] for t in teams] + [t["member"] for t in teams]
@@ -175,12 +226,9 @@ def create():
 
 
 @app.route("/api/submit", methods=["POST"])
+@requires_team_leader
 def submit():
-    if "team_id" not in session:
-        abort(404)
-    elif session["team_id"] == settings["admin_id"] or session["team_id"] not in [t["leader"] for t in teams]:
-        abort(404)
-    elif "answers" not in request.form:
+    if "answers" not in request.form:
         return "Answers not specified", 400
 
     t = [i for i, t in enumerate(teams) if t["leader"] == session["team_id"]][0]
