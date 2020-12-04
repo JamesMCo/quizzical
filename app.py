@@ -1,6 +1,7 @@
 from flask import abort, escape, Flask, render_template, request, session
 from functools import wraps
 import json
+import sys
 import uuid
 
 app = Flask(__name__, static_folder="static")
@@ -224,6 +225,17 @@ def create():
                       "answers": []})
         return {"leader": leader_id, "member": member_id}, 200
 
+@app.route("/api/exportstate")
+@requires_admin
+def exportstate():
+    try:
+        with open("state_data.json", "w") as f:
+            state = json.dumps([quiz, teams])
+            f.write(state)
+        return "State exported successfully", 200
+    except Exception as e:
+        return "State failed to export:\n" + str(e), 500
+
 
 @app.route("/api/submit", methods=["POST"])
 @requires_team_leader
@@ -244,9 +256,13 @@ if __name__ == "__main__":
         print("All settings require values: please check quiz_settings.json")
         exit(1)
 
+    if len(sys.argv) > 1:
+        print("Using predefined state from " + sys.argv[1])
+        with open(sys.argv[1]) as f:
+            quiz, teams = json.loads(f.read())
+    else:
+        quiz = {"state": "preround", "question_count": 0}
+        teams = []
+
     app.secret_key = settings["secret_key"]
-
-    quiz = {"state": "preround", "question_count": 0}
-    teams = []
-
     app.run(host="0.0.0.0", port=80)
