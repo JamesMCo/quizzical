@@ -90,8 +90,10 @@ def main():
 def join():
     if "team_id" not in request.form:
         return "Team not specified", 400
-    elif request.form["team_id"] == settings["admin_id"] or request.form["team_id"] in [t["leader"] for t in teams] or request.form["team_id"] in [t["member"] for t in teams]:
-        session["team_id"] = request.form["team_id"]
+
+    requested_id = request.form["team_id"].lower()
+    if requested_id == settings["admin_id"] or requested_id in [t["leader"] for t in teams] or requested_id in [t["member"] for t in teams]:
+        session["team_id"] = requested_id
         return "Team successfully joined", 200
     else:
         return "Team not found", 404
