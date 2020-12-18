@@ -269,4 +269,11 @@ if __name__ == "__main__":
         teams = []
 
     app.secret_key = settings["secret_key"]
+    if settings["https_enabled"]:
+        if settings["ssl_fullchain"] != None and settings["ssl_privkey"] != None:
+            print("Running with HTTPS enabled")
+            app.run(host="0.0.0.0", port=443, ssl_context=(settings["ssl_fullchain"], settings["ssl_privkey"]))
+            exit()
+        print("Requested to run with HTTPS enabled, but ssl_fullchain or ssl_privkey settings not provided")
+    print("Running with HTTPS disabled")
     app.run(host="0.0.0.0", port=80)

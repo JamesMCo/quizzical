@@ -2,5 +2,8 @@
     "quiz_name":      "",
     "admin_id":       "",
     "secret_key":     "",
-    "heartbeat_freq": 5000
+    "heartbeat_freq": 5000,
+    "https_enabled":  true,
+    "ssl_fullchain":  null,
+    "ssl_privkey":    null
 }
