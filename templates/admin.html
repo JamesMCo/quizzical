@@ -23,13 +23,13 @@
 
 <div id="preround" style="display: none;">
     <div class="input-group mb-3">
-        <input class="form-control" id="teamname_input" onkeyup="if (event.keyCode === 13) {create_team();}" placeholder="Team Name">
+        <input class="form-control" id="teamname_input" autocomplete="off" onkeyup="if (event.keyCode === 13) {create_team();}" placeholder="Team Name">
         <div class="input-group=append">
             <button class="btn btn-outline-primary" onclick="create_team();">Create Team</button>
         </div>
     </div>
     <div class="input-group mb-3">
-        <input class="form-control" id="questioncount_input" onkeyup="if (event.keyCode === 13) {start_round();}" placeholder="Number of Questions">
+        <input class="form-control" id="questioncount_input" autocomplete="off" onkeyup="if (event.keyCode === 13) {start_round();}" placeholder="Number of Questions">
         <div class="input-group=append">
             <button class="btn btn-outline-primary" onclick="start_round();">Start Round</button>
         </div>

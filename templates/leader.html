@@ -54,7 +54,7 @@
                         if (previous_state === "preround" || previous_state === "") {
                             let boxes = "";
                             for (let i = 1; i <= data["question_count"]; i++) {
-                                boxes += "<input class='form-control form-control-lg my-4' id='answer_box_" + i + "' placeholder='Question " + i + "'>";
+                                boxes += "<input class='form-control form-control-lg my-4' id='answer_box_" + i + "' placeholder='Question " + i + "' autocomplete='off'>";
                             }
                             document.querySelector("#answer_boxes").innerHTML = boxes;
                             question_count = data["question_count"];
