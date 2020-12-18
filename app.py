@@ -242,7 +242,9 @@ def exportstate():
 @app.route("/api/submit", methods=["POST"])
 @requires_team_leader
 def submit():
-    if "answers" not in request.form:
+    if quiz["state"] != "answering":
+        return "Quiz not expecting to accept an answer submission", 403
+    elif "answers" not in request.form:
         return "Answers not specified", 400
 
     t = [i for i, t in enumerate(teams) if t["leader"] == session["team_id"]][0]
