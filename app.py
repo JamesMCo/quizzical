@@ -122,6 +122,7 @@ def round_start():
 
         quiz["question_count"] = question_count
         quiz["state"] = "answering"
+        quiz["round_id"] = str(uuid.uuid4())[:8]
         for i in range(len(teams)):
             teams[i]["submitted"] = False
             teams[i]["answers"] = [""] * question_count
@@ -158,11 +159,13 @@ def status():
         elif quiz["state"] == "answering":
             return {"state": quiz["state"],
                     "question_count": quiz["question_count"],
+                    "round_id": quiz["round_id"],
                     "teams": [{"name": t["name"], "leader": t["leader"], "member": t["member"]} for t in teams],
                     "submitted": [t["name"] for t in teams if t["submitted"]]}, 200
         elif quiz["state"] == "postround":
             return {"state": quiz["state"],
                 "question_count": quiz["question_count"],
+                "round_id": quiz["round_id"],
                 "teams": [{"name": t["name"], "leader": t["leader"], "member": t["member"]} for t in teams],
                 "submissions": [{"name": t["name"], "answers": t["answers"]} for t in teams if t["submitted"]]}, 200
         else:
@@ -176,16 +179,19 @@ def status():
             if team_data["submitted"]:
                 return {"state": "answering",
                         "question_count": quiz["question_count"],
+                        "round_id": quiz["round_id"],
                         "submitted": team_data["submitted"],
                         "answers": team_data["answers"]}, 200
             else:
                 return {"state": "answering",
                         "question_count": quiz["question_count"],
+                        "round_id": quiz["round_id"],
                         "submitted": team_data["submitted"]}, 200
         elif quiz["state"] == "postround":
             team_data = [t for t in teams if t["leader"] == session["team_id"] or t["member"] == session["team_id"]][0]
             return {"state": "postround",
                     "question_count": quiz["question_count"],
+                    "round_id": quiz["round_id"],
                     "answers": team_data["answers"]}, 200
         else:
             return {"state": "invalid"}, 500

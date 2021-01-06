@@ -24,6 +24,7 @@
 <script type="text/javascript">
     let previous_state = "";
     let question_count = 0;
+    let round_id = "";
 
     get_status = () => {
         fetch("/api/status")
@@ -51,7 +52,7 @@
                         document.querySelector("#notsubmitted").style.display = "";
                         document.querySelector("#submitted").style.display = "none";
 
-                        if (previous_state === "preround" || previous_state === "") {
+                        if (previous_state === "preround" || previous_state === "" || round_id !== data["round_id"]) {
                             let boxes = "";
                             for (let i = 1; i <= data["question_count"]; i++) {
                                 boxes += "<input class='form-control form-control-lg my-4' id='answer_box_" + i + "' placeholder='Question " + i + "' autocomplete='off'>";
@@ -92,6 +93,7 @@
                     break;
             }
             previous_state = data["state"];
+            round_id = data["round_id"];
         });
     }
 
