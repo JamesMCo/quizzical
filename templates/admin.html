@@ -46,8 +46,10 @@
 
 <script type="text/javascript">
     let prev_team_list = [];
+    let team_count   = 0;
+    let submit_count = 0;
 
-    get_status = () => {
+    get_status = (callback=null) => {
         fetch("/api/status")
         .then((response) => {
             if (response.status === 200) {
@@ -90,6 +92,9 @@
                     }
                     submitted_list += "";
                     document.querySelector("#td_teamssubmitted").innerHTML = submitted_list;
+
+                    team_count   = data["teams"].length;
+                    submit_count = data["submitted"].length;
                     break;
                 case "postround":
                     document.querySelector("#td_quizstate").innerHTML = "Post-Round";
@@ -133,6 +138,10 @@
                     team_list += "<details><summary>" + team["name"] + "</summary><ul><li>Leader ID: " + team["leader"] + "</li><li>Member ID: " + team["member"] +  "</li></ul></details>";
                 }
                 document.querySelector("#td_teams").innerHTML = team_list;
+            }
+        }).then(() => {
+            if (callback !== null) {
+                callback();
             }
         });
     }
@@ -182,15 +191,24 @@
     }
 
     stop_round = () => {
-        fetch("/api/round/stop", {method: "POST",
-            credentials: "include"})
-            .then((response) => {
-                get_status();
-                if (response.status != 200) {
-                    response.text().then((text) => {alert(text);});
+        get_status(() => {
+            if (team_count !== submit_count) {
+                if (!confirm(team_count - submit_count + " team" + (team_count - submit_count == 1 ? " hasn't" : "s haven't") + " submitted their answers yet. Are you sure you want to stop the round?"))
+                {
+                    return;
                 }
             }
-        );
+
+            fetch("/api/round/stop", {method: "POST",
+                credentials: "include"})
+                .then((response) => {
+                    get_status();
+                    if (response.status != 200) {
+                        response.text().then((text) => {alert(text);});
+                    }
+                }
+            );
+        });
     }
 
     complete_round = () => {
